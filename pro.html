@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luxury Professional Calculator</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #f39c12;
+            --dark-color: #1a252f;
+            --light-color: #ecf0f1;
+            --display-color: #0d1b2a;
+            --button-hover: #e67e22;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #34495e, #2c3e50);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: var(--light-color);
+        }
+
+        .calculator {
+            width: 350px;
+            background: var(--primary-color);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            border: 2px solid var(--secondary-color);
+            position: relative;
+        }
+
+        .display {
+            background: var(--display-color);
+            padding: 20px;
+            text-align: right;
+            position: relative;
+            min-height: 80px;
+        }
+
+        .display-main {
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+            overflow-x: auto;
+            white-space: nowrap;
+            color: white;
+        }
+
+        .display-secondary {
+            font-size: 1rem;
+            color: #7f8c8d;
+            min-height: 20px;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            padding: 20px;
+            background: var(--dark-color);
+        }
+
+        .btn {
+            border: none;
+            border-radius: 10px;
+            padding: 15px 0;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: var(--primary-color);
+            color: var(--light-color);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn-operator {
+            background: var(--secondary-color);
+            color: var(--dark-color);
+            font-weight: bold;
+        }
+
+        .btn-special {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-equals {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-function {
+            background: #9b59b6;
+            color: white;
+        }
+
+        .btn-utility {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+
+        .btn:focus:not(:active)::after {
+            animation: ripple 0.6s ease-out;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(20, 20);
+                opacity: 0;
+            }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: var(--primary-color);
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 2px solid var(--secondary-color);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--light-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .tab-buttons {
+            display: flex;
+            margin-bottom: 15px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: var(--dark-color);
+            color: var(--light-color);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: var(--secondary-color);
+            color: var(--dark-color);
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .history-item {
+            padding: 8px;
+            border-bottom: 1px solid #34495e;
+            cursor: pointer;
+        }
+
+        .history-item:hover {
+            background: #34495e;
+        }
+
+        .unit-converter {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .unit-converter select, .unit-converter input {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #34495e;
+            background: var(--dark-color);
+            color: var(--light-color);
+        }
+
+        .date-calculator {
+            display: grid;
+            gap: 10px;
+        }
+
+        .date-calculator input, .date-calculator select {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #34495e;
+            background: var(--dark-color);
+            color: var(--light-color);
+        }
+
+        .music-player {
+            text-align: center;
+        }
+
+        .music-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .music-btn {
+            background: var(--secondary-color);
+            color: var(--dark-color);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .music-title {
+            margin: 10px 0;
+        }
+
+        .volume-control {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .theme-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .theme-option {
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            border: 2px solid transparent;
+        }
+
+        .theme-option:hover {
+            border-color: var(--secondary-color);
+        }
+
+        .theme-option.selected {
+            border-color: var(--secondary-color);
+            font-weight: bold;
+        }
+
+        /* Animation for button presses */
+        @keyframes buttonPress {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+
+        .btn-press {
+            animation: buttonPress 0.2s;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="display">
+            <div class="display-secondary" id="secondary-display"></div>
+            <div class="display-main" id="main-display">0</div>
+        </div>
+        <div class="buttons">
+            <button class="btn btn-utility" onclick="clearAll()">AC</button>
+            <button class="btn btn-utility" onclick="backspace()">⌫</button>
+            <button class="btn btn-utility" onclick="toggleSign()">±</button>
+            <button class="btn btn-operator" onclick="appendOperator('/')">÷</button>
+            
+            <button class="btn btn-function" onclick="openModal('scientific')">sin</button>
+            <button class="btn btn-function" onclick="openModal('scientific')">cos</button>
+            <button class="btn btn-function" onclick="openModal('scientific')">tan</button>
+            <button class="btn btn-operator" onclick="appendOperator('*')">×</button>
+            
+            <button class="btn" onclick="appendNumber('7')">7</button>
+            <button class="btn" onclick="appendNumber('8')">8</button>
+            <button class="btn" onclick="appendNumber('9')">9</button>
+            <button class="btn btn-operator" onclick="appendOperator('-')">-</button>
+            
+            <button class="btn" onclick="appendNumber('4')">4</button>
+            <button class="btn" onclick="appendNumber('5')">5</button>
+            <button class="btn" onclick="appendNumber('6')">6</button>
+            <button class="btn btn-operator" onclick="appendOperator('+')">+</button>
+            
+            <button class="btn" onclick="appendNumber('1')">1</button>
+            <button class="btn" onclick="appendNumber('2')">2</button>
+            <button class="btn" onclick="appendNumber('3')">3</button>
+            <button class="btn btn-equals" onclick="calculate()">=</button>
+            
+            <button class="btn btn-special" onclick="appendNumber('0')">0</button>
+            <button class="btn btn-special" onclick="appendDecimal()">.</button>
+            <button class="btn btn-special" onclick="percentage()">%</button>
+            <button class="btn btn-special" onclick="openModal('more')">MORE</button>
+            
+            <button class="btn btn-function" onclick="openModal('date')">DATE CAL</button>
+            <button class="btn btn-function" onclick="openModal('convert')">CONVERT</button>
+            <button class="btn btn-function" onclick="openModal('history')">HISTORY</button>
+            <button class="btn btn-function" onclick="openModal('songs')">SONGS</button>
+        </div>
+    </div>
+
+    <!-- Modal Windows -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Modal Title</h2>
+                <button class="close-modal" onclick="closeModal()">×</button>
+            </div>
+            
+            <div class="tab-buttons" id="tab-buttons">
+                <!-- Tabs will be added dynamically -->
+            </div>
+            
+            <div id="modal-content">
+                <!-- Content will be added dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <audio id="audio-player" loop></audio>
+
+    <script>
+        // Calculator state
+        let currentInput = '0';
+        let previousInput = '';
+        let operation = null;
+        let resetInput = false;
+        const calculationHistory = [];
+        const musicPlaylist = [
+            { title: "Relaxing Piano", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
+            { title: "Ambient Synth", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" },
+            { title: "Nature Sounds", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" }
+        ];
+        let currentMusicIndex = 0;
+        let isMusicPlaying = false;
+
+        // DOM elements
+        const mainDisplay = document.getElementById('main-display');
+        const secondaryDisplay = document.getElementById('secondary-display');
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const tabButtons = document.getElementById('tab-buttons');
+        const audioPlayer = document.getElementById('audio-player');
+
+        // Update the display
+        function updateDisplay() {
+            mainDisplay.textContent = currentInput;
+            secondaryDisplay.textContent = previousInput + (operation ? ' ' + operation : '');
+        }
+
+        // Append a number to the current input
+        function appendNumber(number) {
+            if (currentInput === '0' || resetInput) {
+                currentInput = number;
+                resetInput = false;
+            } else {
+                currentInput += number;
+            }
+            updateDisplay();
+            animateButton(event.target);
+        }
+
+        // Append a decimal point
+        function appendDecimal() {
+            if (resetInput) {
+                currentInput = '0.';
+                resetInput = false;
+            } else if (!currentInput.includes('.')) {
+                currentInput += '.';
+            }
+            updateDisplay();
+            animateButton(event.target);
+        }
+
+        // Append an operator
+        function appendOperator(op) {
+            if (operation !== null) calculate();
+            previousInput = currentInput;
+            operation = op;
+            resetInput = true;
+            updateDisplay();
+            animateButton(event.target);
+        }
+
+        // Clear all
+        function clearAll() {
+            currentInput = '0';
+            previousInput = '';
+            operation = null;
+            updateDisplay();
+            animateButton(event.target);
+        }
+
+        // Backspace
+        function backspace() {
+            if (currentInput.length === 1 || (currentInput.length === 2 && currentInput.startsWith('-'))) {
+                currentInput = '0';
+            } else {
+                currentInput = currentInput.slice(0, -1);
+            }
+            updateDisplay();
+            animateButton(event.target);
+        }
+
+        // Toggle sign
+        function toggleSign() {
+            currentInput = (parseFloat(currentInput) * -1).toString();
+            updateDisplay();
+            animateButton(event.target);
+        }
+
+        // Percentage
+        function percentage() {
+            currentInput = (parseFloat(currentInput) / 100).toString();
+            updateDisplay();
+            animateButton(event.target);
+        }
+
+        // Calculate result
+        function calculate() {
+            if (operation === null || resetInput) return;
+            
+            let result;
+            const prev = parseFloat(previousInput);
+            const current = parseFloat(currentInput);
+            
+            switch (operation) {
+                case '+':
+                    result = prev + current;
+                    break;
+                case '-':
+                    result = prev - current;
+                    break;
+                case '*':
+                    result = prev * current;
+                    break;
+                case '/':
+                    result = prev / current;
+                    break;
+                default:
+                    return;
+            }
+            
+            // Add to history
+            const historyEntry = {
+                calculation: `${previousInput} ${operation} ${currentInput}`,
+                result: result.toString()
+            };
+            calculationHistory.unshift(historyEntry);
+            
+            currentInput = result.toString();
+            operation = null;
+            resetInput = true;
+            updateDisplay();
+            animateButton(event.target);
+        }
+
+        // Open modal with specific content
+        function openModal(type) {
+            modalTitle.textContent = type.toUpperCase();
+            tabButtons.innerHTML = '';
+            modalContent.innerHTML = '';
+            
+            switch (type) {
+                case 'date':
+                    setupDateCalculator();
+                    break;
+                case 'convert':
+                    setupUnitConverter();
+                    break;
+                case 'history':
+                    setupHistoryViewer();
+                    break;
+                case 'songs':
+                    setupMusicPlayer();
+                    break;
+                case 'more':
+                    setupMoreFeatures();
+                    break;
+                case 'scientific':
+                    setupScientificFunctions();
+                    break;
+            }
+            
+            modal.style.display = 'flex';
+            animateButton(event.target);
+        }
+
+        // Close modal
+        function closeModal() {
+            modal.style.display = 'none';
+        }
+
+        // Setup date calculator
+        function setupDateCalculator() {
+            const today = new Date();
+            const formattedDate = today.toISOString().split('T')[0];
+            
+            modalContent.innerHTML = `
+                <div class="date-calculator">
+                    <h3>Days Between Dates</h3>
+                    <label>Start Date:</label>
+                    <input type="date" id="start-date" value="${formattedDate}">
+                    <label>End Date:</label>
+                    <input type="date" id="end-date" value="${formattedDate}">
+                    <button class="btn" onclick="calculateDaysBetween()">Calculate</button>
+                    <div id="date-result" style="margin-top: 10px; text-align: center;"></div>
+                    
+                    <h3 style="margin-top: 20px;">Add/Subtract Days</h3>
+                    <label>Date:</label>
+                    <input type="date" id="base-date" value="${formattedDate}">
+                    <label>Days to Add/Subtract:</label>
+                    <input type="number" id="days-to-add" value="0">
+                    <button class="btn" onclick="calculateDateOperation()">Calculate</button>
+                    <div id="date-operation-result" style="margin-top: 10px; text-align: center;"></div>
+                </div>
+            `;
+        }
+
+        // Calculate days between dates
+        function calculateDaysBetween() {
+            const startDate = new Date(document.getElementById('start-date').value);
+            const endDate = new Date(document.getElementById('end-date').value);
+            const diffTime = Math.abs(endDate - startDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+            document.getElementById('date-result').innerHTML = `
+                <strong>Result:</strong> ${diffDays} days
+            `;
+        }
+
+        // Calculate date operations
+        function calculateDateOperation() {
+            const baseDate = new Date(document.getElementById('base-date').value);
+            const daysToAdd = parseInt(document.getElementById('days-to-add').value);
+            baseDate.setDate(baseDate.getDate() + daysToAdd);
+            
+            document.getElementById('date-operation-result').innerHTML = `
+                <strong>New Date:</strong> ${baseDate.toDateString()}
+            `;
+        }
+
+        // Setup unit converter
+        function setupUnitConverter() {
+            tabButtons.innerHTML = `
+                <button class="tab-btn active" onclick="switchTab('length')">Length</button>
+                <button class="tab-btn" onclick="switchTab('weight')">Weight</button>
+                <button class="tab-btn" onclick="switchTab('temperature')">Temperature</button>
+                <button class="tab-btn" onclick="switchTab('currency')">Currency</button>
+            `;
+            
+            modalContent.innerHTML = `
+                <div class="tab-content active" id="length-tab">
+                    <div class="unit-converter">
+                        <div>
+                            <input type="number" id="length-value" value="1" oninput="convertLength()">
+                            <select id="length-from" onchange="convertLength()">
+                                <option value="mm">Millimeters</option>
+                                <option value="cm">Centimeters</option>
+                                <option value="m">Meters</option>
+                                <option value="km">Kilometers</option>
+                                <option value="in">Inches</option>
+                                <option value="ft">Feet</option>
+                                <option value="yd">Yards</option>
+                                <option value="mi">Miles</option>
+                            </select>
+                        </div>
+                        <div>
+                            <input type="number" id="length-result" readonly>
+                            <select id="length-to" onchange="convertLength()">
+                                <option value="mm">Millimeters</option>
+                                <option value="cm">Centimeters</option>
+                                <option value="m">Meters</option>
+                                <option value="km">Kilometers</option>
+                                <option value="in" selected>Inches</option>
+                                <option value="ft">Feet</option>
+                                <option value="yd">Yards</option>
+                                <option value="mi">Miles</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="weight-tab">
+                    <div class="unit-converter">
+                        <div>
+                            <input type="number" id="weight-value" value="1" oninput="convertWeight()">
+                            <select id="weight-from" onchange="convertWeight()">
+                                <option value="mg">Milligrams</option>
+                                <option value="g">Grams</option>
+                                <option value="kg">Kilograms</option>
+                                <option value="oz">Ounces</option>
+                                <option value="lb">Pounds</option>
+                            </select>
+                        </div>
+                        <div>
+                            <input type="number" id="weight-result" readonly>
+                            <select id="weight-to" onchange="convertWeight()">
+                                <option value="mg">Milligrams</option>
+                                <option value="g">Grams</option>
+                                <option value="kg">Kilograms</option>
+                                <option value="oz" selected>Ounces</option>
+                                <option value="lb">Pounds</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="temperature-tab">
+                    <div class="unit-converter">
+                        <div>
+                            <input type="number" id="temp-value" value="0" oninput="convertTemperature()">
+                            <select id="temp-from" onchange="convertTemperature()">
+                                <option value="c">Celsius</option>
+                                <option value="f">Fahrenheit</option>
+                                <option value="k">Kelvin</option>
+                            </select>
+                        </div>
+                        <div>
+                            <input type="number" id="temp-result" readonly>
+                            <select id="temp-to" onchange="convertTemperature()">
+                                <option value="c">Celsius</option>
+                                <option value="f" selected>Fahrenheit</option>
+                                <option value="k">Kelvin</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="currency-tab">
+                    <div class="unit-converter">
+                        <div>
+                            <input type="number" id="currency-value" value="1" oninput="convertCurrency()">
+                            <select id="currency-from" onchange="convertCurrency()">
+                                <option value="USD">USD</option>
+                                <option value="EUR">EUR</option>
+                                <option value="GBP">GBP</option>
+                                <option value="JPY">JPY</option>
+                            </select>
+                        </div>
+                        <div>
+                            <input type="number" id="currency-result" readonly>
+                            <select id="currency-to" onchange="convertCurrency()">
+                                <option value="USD">USD</option>
+                                <option value="EUR" selected>EUR</option>
+                                <option value="GBP">GBP</option>
+                                <option value="JPY">JPY</option>
+                            </select>
+                        </div>
+                    </div>
+                    <p style="text-align: center; margin-top: 10px; font-size: 0.8em;">
+                        Note: Currency rates are fixed for demo. In a real app, you would fetch live rates.
+                    </p>
+                </div>
+            `;
+            
+            // Initialize conversions
+            convertLength();
+            convertWeight();
+            convertTemperature();
+            convertCurrency();
+        }
+
+        // Switch between tabs
+        function switchTab(tabName) {
+            // Update tab buttons
+            const buttons = tabButtons.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update tab content
+            const tabs = modalContent.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+        }
+
+        // Length conversion
+        function convertLength() {
+            const value = parseFloat(document.getElementById('length-value').value);
+            const fromUnit = document.getElementById('length-from').value;
+            const toUnit = document.getElementById('length-to').value;
+            
+            // Convert to meters first
+            let meters;
+            switch (fromUnit) {
+                case 'mm': meters = value / 1000; break;
+                case 'cm': meters = value / 100; break;
+                case 'm': meters = value; break;
+                case 'km': meters = value * 1000; break;
+                case 'in': meters = value * 0.0254; break;
+                case 'ft': meters = value * 0.3048; break;
+                case 'yd': meters = value * 0.9144; break;
+                case 'mi': meters = value * 1609.344; break;
+            }
+            
+            // Convert from meters to target unit
+            let result;
+            switch (toUnit) {
+                case 'mm': result = meters * 1000; break;
+                case 'cm': result = meters * 100; break;
+                case 'm': result = meters; break;
+                case 'km': result = meters / 1000; break;
+                case 'in': result = meters / 0.0254; break;
+                case 'ft': result = meters / 0.3048; break;
+                case 'yd': result = meters / 0.9144; break;
+                case 'mi': result = meters / 1609.344; break;
+            }
+            
+            document.getElementById('length-result').value = result.toFixed(6);
+        }
+
+        // Weight conversion
+        function convertWeight() {
+            const value = parseFloat(document.getElementById('weight-value').value);
+            const fromUnit = document.getElementById('weight-from').value;
+            const toUnit = document.getElementById('weight-to').value;
+            
+            // Convert to grams first
+            let grams;
+            switch (fromUnit) {
+                case 'mg': grams = value / 1000; break;
+                case 'g': grams = value; break;
+                case 'kg': grams = value * 1000; break;
+                case 'oz': grams = value * 28.3495; break;
+                case 'lb': grams = value * 453.592; break;
+            }
+            
+            // Convert from grams to target unit
+            let result;
+            switch (toUnit) {
+                case 'mg': result = grams * 1000; break;
+                case 'g': result = grams; break;
+                case 'kg': result = grams / 1000; break;
+                case 'oz': result = grams / 28.3495; break;
+                case 'lb': result = grams / 453.592; break;
+            }
+            
+            document.getElementById('weight-result').value = result.toFixed(6);
+        }
+
+        // Temperature conversion
+        function convertTemperature() {
+            const value = parseFloat(document.getElementById('temp-value').value);
+            const fromUnit = document.getElementById('temp-from').value;
+            const toUnit = document.getElementById('temp-to').value;
+            
+            // Convert to Celsius first
+            let celsius;
+            switch (fromUnit) {
+                case 'c': celsius = value; break;
+                case 'f': celsius = (value - 32) * 5/9; break;
+                case 'k': celsius = value - 273.15; break;
+            }
+            
+            // Convert from Celsius to target unit
+            let result;
+            switch (toUnit) {
+                case 'c': result = celsius; break;
+                case 'f': result = (celsius * 9/5) + 32; break;
+                case 'k': result = celsius + 273.15; break;
+            }
+            
+            document.getElementById('temp-result').value = result.toFixed(2);
+        }
+
+        // Currency conversion (with fixed rates for demo)
+        function convertCurrency() {
+            const value = parseFloat(document.getElementById('currency-value').value);
+            const fromUnit = document.getElementById('currency-from').value;
+            const toUnit = document.getElementById('currency-to').value;
+            
+            // Fixed exchange rates (in a real app, you would fetch these from an API)
+            const rates = {
+                USD: { USD: 1, EUR: 0.85, GBP: 0.73, JPY: 110.25 },
+                EUR: { USD: 1.18, EUR: 1, GBP: 0.86, JPY: 130.12 },
+                GBP: { USD: 1.37, EUR: 1.16, GBP: 1, JPY: 151.25 },
+                JPY: { USD: 0.0091, EUR: 0.0077, GBP: 0.0066, JPY: 1 }
+            };
+            
+            const result = value * rates[fromUnit][toUnit];
+            document.getElementById('currency-result').value = result.toFixed(2);
+        }
+
+        // Setup history viewer
+        function setupHistoryViewer() {
+            if (calculationHistory.length === 0) {
+                modalContent.innerHTML = '<p style="text-align: center;">No calculation history yet.</p>';
+                return;
+            }
+            
+            let html = '<div style="max-height: 300px; overflow-y: auto;">';
+            calculationHistory.forEach((entry, index) => {
+                html += `
+                    <div class="history-item" onclick="useHistoryResult(${index})">
+                        <div>${entry.calculation} =</div>
+                        <div style="text-align: right; font-weight: bold;">${entry.result}</div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            html += '<button class="btn" style="margin-top: 15px; width: 100%;" onclick="clearHistory()">Clear History</button>';
+            
+            modalContent.innerHTML = html;
+        }
+
+        // Use a history result
+        function useHistoryResult(index) {
+            currentInput = calculationHistory[index].result;
+            resetInput = true;
+            updateDisplay();
+            closeModal();
+        }
+
+        // Clear history
+        function clearHistory() {
+            calculationHistory.length = 0;
+            setupHistoryViewer();
+        }
+
+        // Setup music player
+        function setupMusicPlayer() {
+            modalContent.innerHTML = `
+                <div class="music-player">
+                    <h3 class="music-title" id="music-title">${musicPlaylist[currentMusicIndex].title}</h3>
+                    <div class="music-controls">
+                        <button class="music-btn" onclick="prevTrack()">⏮</button>
+                        <button class="music-btn" onclick="togglePlay()">${isMusicPlaying ? '⏸' : '▶'}</button>
+                        <button class="music-btn" onclick="nextTrack()">⏭</button>
+                    </div>
+                    <input type="range" class="volume-control" min="0" max="1" step="0.01" value="0.5" 
+                        oninput="setVolume(this.value)">
+                    <div style="margin-top: 20px;">
+                        <h4>Playlist</h4>
+                        <div style="max-height: 150px; overflow-y: auto;">
+                            ${musicPlaylist.map((track, index) => `
+                                <div style="padding: 8px; border-bottom: 1px solid #34495e; 
+                                    ${index === currentMusicIndex ? 'background: #34495e;' : ''}
+                                    cursor: pointer;" onclick="playTrack(${index})">
+                                    ${track.title}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Update player if already playing
+            if (isMusicPlaying) {
+                audioPlayer.play();
+            }
+        }
+
+        // Toggle play/pause
+        function togglePlay() {
+            if (isMusicPlaying) {
+                audioPlayer.pause();
+            } else {
+                audioPlayer.src = musicPlaylist[currentMusicIndex].url;
+                audioPlayer.play();
+            }
+            isMusicPlaying = !isMusicPlaying;
+            setupMusicPlayer(); // Refresh the UI
+        }
+
+        // Play specific track
+        function playTrack(index) {
+            currentMusicIndex = index;
+            audioPlayer.src = musicPlaylist[currentMusicIndex].url;
+            audioPlayer.play();
+            isMusicPlaying = true;
+            setupMusicPlayer();
+        }
+
+        // Next track
+        function nextTrack() {
+            currentMusicIndex = (currentMusicIndex + 1) % musicPlaylist.length;
+            playTrack(currentMusicIndex);
+        }
+
+        // Previous track
+        function prevTrack() {
+            currentMusicIndex = (currentMusicIndex - 1 + musicPlaylist.length) % musicPlaylist.length;
+            playTrack(currentMusicIndex);
+        }
+
+        // Set volume
+        function setVolume(volume) {
+            audioPlayer.volume = volume;
+        }
+
+        // Setup more features
+        function setupMoreFeatures() {
+            modalContent.innerHTML = `
+                <div>
+                    <h3>Additional Features</h3>
+                    <button class="btn" style="width: 100%; margin-bottom: 10px;" onclick="setupScientificFunctions()">Scientific Functions</button>
+                    <button class="btn" style="width: 100%; margin-bottom: 10px;" onclick="alert('Matrix calculations would go here')">Matrix Calculations</button>
+                    <button class="btn" style="width: 100%; margin-bottom: 10px;" onclick="alert('Graphing mode would go here')">Graphing Mode</button>
+                    <button class="btn" style="width: 100%; margin-bottom: 10px;" onclick="alert('Equation solver would go here')">Equation Solver</button>
+                    
+                    <h3 style="margin-top: 20px;">Themes</h3>
+                    <div class="theme-selector">
+                        <div class="theme-option selected" style="background: #2c3e50; color: #ecf0f1;" 
+                            onclick="changeTheme('default')">Default</div>
+                        <div class="theme-option" style="background: #1a1a2e; color: #e94560;" 
+                            onclick="changeTheme('dark-red')">Dark Red</div>
+                        <div class="theme-option" style="background: #0f3460; color: #e94560;" 
+                            onclick="changeTheme('blue-red')">Blue Red</div>
+                        <div class="theme-option" style="background: #16213e; color: #0f0;" 
+                            onclick="changeTheme('dark-green')">Dark Green</div>
+                        <div class="theme-option" style="background: #1b1b2f; color: #fdcb6e;" 
+                            onclick="changeTheme('dark-yellow')">Dark Yellow</div>
+                        <div class="theme-option" style="background: #000; color: #0f0;" 
+                            onclick="changeTheme('matrix')">Matrix</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Setup scientific functions
+        function setupScientificFunctions() {
+            modalContent.innerHTML = `
+                <div>
+                    <h3>Scientific Functions</h3>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                        <button class="btn" onclick="scientificFunction('sin')">sin</button>
+                        <button class="btn" onclick="scientificFunction('cos')">cos</button>
+                        <button class="btn" onclick="scientificFunction('tan')">tan</button>
+                        <button class="btn" onclick="scientificFunction('log')">log</button>
+                        <button class="btn" onclick="scientificFunction('ln')">ln</button>
+                        <button class="btn" onclick="scientificFunction('sqrt')">√</button>
+                        <button class="btn" onclick="scientificFunction('pi')">π</button>
+                        <button class="btn" onclick="scientificFunction('e')">e</button>
+                        <button class="btn" onclick="scientificFunction('^')">x^y</button>
+                        <button class="btn" onclick="scientificFunction('fact')">n!</button>
+                        <button class="btn" onclick="scientificFunction('exp')">Exp</button>
+                        <button class="btn" onclick="scientificFunction('mod')">Mod</button>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <p>Enter a number first, then select the function.</p>
+                        <p>For x^y, enter x, then this function, then y.</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Handle scientific functions
+        function scientificFunction(func) {
+            let result;
+            const num = parseFloat(currentInput);
+            
+            switch (func) {
+                case 'sin':
+                    result = Math.sin(num * Math.PI / 180); // Using degrees
+                    break;
+                case 'cos':
+                    result = Math.cos(num * Math.PI / 180);
+                    break;
+                case 'tan':
+                    result = Math.tan(num * Math.PI / 180);
+                    break;
+                case 'log':
+                    result = Math.log10(num);
+                    break;
+                case 'ln':
+                    result = Math.log(num);
+                    break;
+                case 'sqrt':
+                    result = Math.sqrt(num);
+                    break;
+                case 'pi':
+                    result = Math.PI;
+                    break;
+                case 'e':
+                    result = Math.E;
+                    break;
+                case '^':
+                    previousInput = currentInput;
+                    operation = '^';
+                    resetInput = true;
+                    updateDisplay();
+                    closeModal();
+                    return;
+                case 'fact':
+                    result = 1;
+                    for (let i = 2; i <= num; i++) {
+                        result *= i;
+                    }
+                    break;
+                case 'exp':
+                    result = Math.exp(num);
+                    break;
+                case 'mod':
+                    previousInput = currentInput;
+                    operation = 'mod';
+                    resetInput = true;
+                    updateDisplay();
+                    closeModal();
+                    return;
+            }
+            
+            currentInput = result.toString();
+            updateDisplay();
+            closeModal();
+        }
+
+        // Change theme
+        function changeTheme(theme) {
+            const root = document.documentElement;
+            const themeOptions = document.querySelectorAll('.theme-option');
+            themeOptions.forEach(opt => opt.classList.remove('selected'));
+            event.target.classList.add('selected');
+            
+            switch (theme) {
+                case 'default':
+                    root.style.setProperty('--primary-color', '#2c3e50');
+                    root.style.setProperty('--secondary-color', '#f39c12');
+                    root.style.setProperty('--dark-color', '#1a252f');
+                    root.style.setProperty('--light-color', '#ecf0f1');
+                    root.style.setProperty('--display-color', '#0d1b2a');
+                    root.style.setProperty('--button-hover', '#e67e22');
+                    break;
+                case 'dark-red':
+                    root.style.setProperty('--primary-color', '#1a1a2e');
+                    root.style.setProperty('--secondary-color', '#e94560');
+                    root.style.setProperty('--dark-color', '#16213e');
+                    root.style.setProperty('--light-color', '#ffffff');
+                    root.style.setProperty('--display-color', '#0f3460');
+                    root.style.setProperty('--button-hover', '#e94560');
+                    break;
+                case 'blue-red':
+                    root.style.setProperty('--primary-color', '#0f3460');
+                    root.style.setProperty('--secondary-color', '#e94560');
+                    root.style.setProperty('--dark-color', '#1a1a2e');
+                    root.style.setProperty('--light-color', '#ffffff');
+                    root.style.setProperty('--display-color', '#16213e');
+                    root.style.setProperty('--button-hover', '#e94560');
+                    break;
+                case 'dark-green':
+                    root.style.setProperty('--primary-color', '#16213e');
+                    root.style.setProperty('--secondary-color', '#00ff00');
+                    root.style.setProperty('--dark-color', '#1a1a2e');
+                    root.style.setProperty('--light-color', '#ffffff');
+                    root.style.setProperty('--display-color', '#0f3460');
+                    root.style.setProperty('--button-hover', '#00ff00');
+                    break;
+                case 'dark-yellow':
+                    root.style.setProperty('--primary-color', '#1b1b2f');
+                    root.style.setProperty('--secondary-color', '#fdcb6e');
+                    root.style.setProperty('--dark-color', '#1a1a2e');
+                    root.style.setProperty('--light-color', '#ffffff');
+                    root.style.setProperty('--display-color', '#0f3460');
+                    root.style.setProperty('--button-hover', '#fdcb6e');
+                    break;
+                case 'matrix':
+                    root.style.setProperty('--primary-color', '#000000');
+                    root.style.setProperty('--secondary-color', '#00ff00');
+                    root.style.setProperty('--dark-color', '#001a00');
+                    root.style.setProperty('--light-color', '#00ff00');
+                    root.style.setProperty('--display-color', '#001a00');
+                    root.style.setProperty('--button-hover', '#00cc00');
+                    break;
+            }
+        }
+
+        // Animate button press
+        function animateButton(button) {
+            button.classList.add('btn-press');
+            setTimeout(() => {
+                button.classList.remove('btn-press');
+            }, 200);
+        }
+
+        // Initialize calculator
+        updateDisplay();
+    </script>
+</body>
+</html>
